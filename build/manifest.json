@@ -1,11 +1,10 @@
 {
 	"id": "make-it-rain",
-	"name": "Make It Rain",
+	"name": "RainSidian (Make It Rain)",
 	"version": "1.7.1",
 	"minAppVersion": "1.8.10",
-	"description": "Pull your Raindrop.io bookmarks into Obsidian notes with flexible filtering and location options.",
-	"author": "frostmute",
-	"authorUrl": "https://www.github.io/frostmute",
-	"fundingUrl": "https://www.paypal.me/deepspaceghost",
+	"description": "Enhanced Raindrop.io integration with web scraping, interactive dashboard, and manual bookmark creation. Sync your bookmarks to Obsidian with powerful filtering and templates.",
+	"author": "yaeyintlin199",
+	"authorUrl": "https://github.com/yaeyintlin199",
 	"isDesktopOnly": false
 }
