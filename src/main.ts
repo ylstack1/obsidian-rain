@@ -19,6 +19,8 @@
 import { App, Notice, Plugin, PluginSettingTab, Setting, Modal, TextComponent, TextAreaComponent, ButtonComponent, ToggleComponent, PluginManifest, TFile, TAbstractFile, normalizePath, TFolder, DropdownComponent } from 'obsidian';
 
 import { RAINDROP_VIEW_TYPE, RaindropView } from './RaindropView';
+// Modern view temporarily disabled for build compatibility
+// import { RAINDROP_VIEW_TYPE as MODERN_VIEW_TYPE, ModernRaindropView } from './ModernRaindropView';
 import { createNoteContent, saveNote } from './utils/noteUtils';
 import { request, RequestUrlParam } from 'obsidian';
 import { MakeItRainSettings, RaindropType, CONTENT_TYPES, ModalFetchOptions } from './types';
@@ -188,6 +190,13 @@ const DEFAULT_SETTINGS: MakeItRainSettings = {
     showRibbonIcon: true,
     bannerFieldName: 'banner',
     isTemplateSystemEnabled: true,
+    // New modern UI settings
+    enableMdxSupport: true,
+    enableModernUI: true,
+    useCardLayout: true,
+    enableAnimations: true,
+    colorTheme: 'auto',
+    compactMode: false,
     defaultTemplate: `---
 title: "{{title}}"
 source: {{link}}
@@ -930,16 +939,30 @@ export default class RaindropToObsidian extends Plugin implements IRaindropToObs
     async onload() {
         await this.loadSettings();
 
+        // Register classic view (modern view temporarily disabled)
         this.registerView(
             RAINDROP_VIEW_TYPE,
             (leaf) => new RaindropView(leaf, this)
         );
+
+        // TODO: Re-enable modern view after React setup is complete
+        // this.registerView(
+        //     MODERN_VIEW_TYPE,
+        //     (leaf) => new ModernRaindropView(leaf, this)
+        // );
 
         this.addCommand({
             id: 'open-raindrop-dashboard',
             name: 'Open Raindrop Dashboard',
             callback: () => this.activateView(),
         });
+
+        // Modern dashboard temporarily disabled
+        // this.addCommand({
+        //     id: 'open-modern-raindrop-dashboard',
+        //     name: 'Open Modern Raindrop Dashboard',
+        //     callback: () => this.activateModernView(),
+        // });
 
 this.addCommand({
             id: 'add-new-bookmark-modal',

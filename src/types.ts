@@ -30,6 +30,13 @@ export interface MakeItRainSettings {
     defaultTemplate: string;
     contentTypeTemplates: ContentTypeTemplates;
     contentTypeTemplateToggles: ContentTypeToggles;
+    // New modern UI settings
+    enableMdxSupport: boolean;
+    enableModernUI: boolean;
+    useCardLayout: boolean;
+    enableAnimations: boolean;
+    colorTheme: 'auto' | 'light' | 'dark';
+    compactMode: boolean;
 }
 
 export interface ModalFetchOptions {
