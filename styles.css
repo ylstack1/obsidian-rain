@@ -1,0 +1,493 @@
+/* styles.css */
+
+/* ... other styles ... */
+
+.setting-item-stacked .setting-item-info {
+    width: 100%; /* Allow description to take full width */
+    margin-bottom: 8px; /* Add some space between description and input */
+  }
+  
+  .setting-item-stacked .setting-item-control {
+    width: 100%; /* Allow input to take full width */
+  }
+  
+  /* Optional: If your modal settings are not already flexing column */
+  .setting-item-stacked {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the start of the flex container */
+  }
+  
+
+/*
+ * RainSidian Dashboard Styles
+ */
+
+.raindrop-dashboard {
+    /* Obsidian's default view container has padding, but we can add more specific styling */
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.raindrop-dashboard h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--text-normal);
+}
+
+/* Search Bar */
+.raindrop-search-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--input-radius);
+    padding: 5px 10px;
+    background-color: var(--background-primary-alt);
+}
+
+.raindrop-search-bar .search-input {
+    flex-grow: 1;
+    border: none;
+    background: none;
+    padding: 5px;
+    font-size: var(--font-ui-small);
+    color: var(--text-normal);
+}
+
+.raindrop-search-bar .search-input:focus {
+    outline: none;
+}
+
+.raindrop-search-bar .search-icon {
+    color: var(--text-muted);
+    margin-right: 5px;
+}
+
+/* Add New Button */
+.raindrop-dashboard .mod-cta {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: var(--font-ui-medium);
+}
+
+/* Tree View Container */
+.raindrop-tree-container h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 5px;
+    color: var(--text-normal);
+}
+
+/* Custom Tree View Styling to mimic Obsidian's file explorer */
+.tree-view-root {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.tree-item {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tree-item-self {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    cursor: pointer;
+    border-radius: var(--radius-s);
+    transition: background-color 0.1s;
+}
+
+.tree-item-self:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.tree-item-self.is-active {
+    background-color: var(--background-modifier-active);
+}
+
+.tree-item-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+    color: var(--text-accent);
+}
+
+.tree-item-inner {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--font-ui-small);
+}
+
+.tree-item-extra {
+    color: var(--text-muted);
+    font-size: var(--font-ui-smallest);
+    margin-left: 5px;
+}
+
+.tree-view-children {
+    list-style: none;
+    padding-left: 20px; /* Indentation for nested items */
+    margin: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+}
+
+/* Collapse/Expand Logic */
+.tree-item.is-collapsed > .tree-view-children {
+    max-height: 0;
+}
+
+.tree-item:not(.is-collapsed) > .tree-view-children {
+    /* A large value to allow expansion */
+    max-height: 10000px; 
+}
+
+/* Placeholder for items */
+.tree-view-children .tree-item {
+    padding-left: 20px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Error/Warning Messages */
+.raindrop-dashboard .mod-warning,
+.raindrop-dashboard .mod-error {
+    padding: 10px;
+    border-radius: var(--radius-s);
+    margin-top: 10px;
+    font-size: var(--font-ui-small);
+}
+
+.raindrop-dashboard .mod-warning {
+    background-color: var(--color-yellow-rgb);
+    color: var(--color-yellow);
+    border: 1px solid var(--color-yellow);
+}
+
+.raindrop-dashboard .mod-error {
+    background-color: var(--color-red-rgb);
+    color: var(--color-red);
+    border: 1px solid var(--color-red);
+}
+
+
+/* --- Dashboard Layout --- */
+
+.raindrop-dashboard {
+    /* Remove max-width and margin for full view space */
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.raindrop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.raindrop-header h1 {
+    margin: 0;
+    text-align: left;
+    font-size: var(--font-title-large);
+}
+
+.raindrop-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.raindrop-actions .mod-cta {
+    width: auto;
+    margin: 0;
+    padding: 8px 12px;
+}
+
+.raindrop-main-content {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden; /* Important for scrollable panels */
+}
+
+.raindrop-left-panel {
+    flex: 0 0 300px; /* Fixed width for the tree view */
+    border-right: 1px solid var(--background-modifier-border);
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.raindrop-right-panel {
+    flex-grow: 1;
+    padding: 10px 20px;
+    overflow-y: auto;
+}
+
+.raindrop-right-panel h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: var(--font-title-medium);
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 5px;
+}
+
+/* --- Item List --- */
+
+.raindrop-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.raindrop-item-card {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.raindrop-item-card:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.raindrop-item-icon {
+    flex-shrink: 0;
+    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+    color: var(--text-accent);
+}
+
+.raindrop-item-content-wrapper {
+    flex-grow: 1;
+    min-width: 0; /* Allows content to shrink */
+}
+
+.raindrop-item-title {
+    font-weight: 600;
+    font-size: var(--font-ui-medium);
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.raindrop-item-title a {
+    color: var(--text-normal);
+    text-decoration: none;
+}
+
+.raindrop-item-title a:hover {
+    text-decoration: underline;
+}
+
+.raindrop-item-excerpt {
+    font-size: var(--font-ui-small);
+    color: var(--text-muted);
+    margin-bottom: 5px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    -webkit-box-orient: vertical;
+}
+
+.raindrop-item-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.raindrop-tag {
+    font-size: var(--font-ui-smallest);
+    color: var(--text-accent);
+    background-color: var(--background-modifier-accent);
+    padding: 2px 6px;
+    border-radius: var(--radius-s);
+}
+
+/* --- Mobile Responsiveness --- */
+
+@media screen and (max-width: 768px) {
+    .raindrop-main-content {
+        flex-direction: column;
+    }
+
+    .raindrop-left-panel {
+        flex: none;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--background-modifier-border);
+        max-height: 50vh; /* Limit height on mobile */
+    }
+
+    .raindrop-right-panel {
+        padding: 10px;
+    }
+    
+    .raindrop-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .raindrop-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .raindrop-search-bar {
+        flex-grow: 1;
+    }
+    
+    .raindrop-actions .mod-cta {
+        flex-shrink: 0;
+    }
+}
+
+
+/* --- Item Detail View --- */
+
+.raindrop-item-detail-view {
+    /* This is the right panel when an item is selected */
+    padding: 10px 20px;
+}
+
+.raindrop-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 10px;
+}
+
+.raindrop-detail-header h2 {
+    margin: 0;
+    font-size: var(--font-title-large);
+    color: var(--text-normal);
+}
+
+.raindrop-detail-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.raindrop-detail-actions .clickable-icon {
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: var(--radius-s);
+}
+
+.raindrop-detail-actions .clickable-icon:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-accent);
+}
+
+.raindrop-detail-content h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: var(--font-title-small);
+    color: var(--text-normal);
+}
+
+.raindrop-detail-metadata {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px 20px;
+    margin-bottom: 20px;
+    font-size: var(--font-ui-small);
+}
+
+.raindrop-detail-field {
+    display: contents; /* Allows children to participate in the grid */
+}
+
+.raindrop-detail-label {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.raindrop-detail-value {
+    color: var(--text-normal);
+    word-break: break-all;
+}
+
+.raindrop-detail-value a {
+    color: var(--text-accent);
+    text-decoration: none;
+}
+
+.raindrop-detail-value a:hover {
+    text-decoration: underline;
+}
+
+.raindrop-detail-cover {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-m);
+    margin-top: 10px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.raindrop-detail-highlights {
+    list-style: none;
+    padding-left: 0;
+}
+
+.raindrop-highlight-text {
+    background-color: var(--background-modifier-accent);
+    padding: 5px;
+    border-radius: var(--radius-s);
+    margin-bottom: 5px;
+    font-style: italic;
+}
+
+.raindrop-highlight-note {
+    margin-left: 10px;
+    font-size: var(--font-ui-smallest);
+    color: var(--text-muted);
+}
+
+/* Item Card Active State (for the list) */
+.raindrop-item-card.is-active {
+    background-color: var(--background-modifier-active);
+    border-color: var(--interactive-accent);
+}
+
+/* Mobile adjustments for detail view */
+@media screen and (max-width: 768px) {
+    .raindrop-detail-metadata {
+        grid-template-columns: 1fr; /* Stack fields vertically */
+        gap: 5px 0;
+    }
+    
+    .raindrop-detail-field {
+        display: block;
+    }
+
+    .raindrop-detail-label {
+        display: block;
+        margin-bottom: 2px;
+    }
+}

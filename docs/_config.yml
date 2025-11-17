@@ -1,0 +1,5 @@
+title: Make It Rain Documentation
+description: Documentation for the 'Make It Rain' Obsidian plugin
+plugins:
+  - jekyll-remote-theme
+theme: jekyll-theme-hacker
