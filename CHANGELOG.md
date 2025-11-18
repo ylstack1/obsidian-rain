@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2025-11-18
+
+### Added
+
+- **Tab-Based Dashboard**: Complete redesign with two-tab system
+  - Tab 1: Collections & Items List (side-by-side on desktop, stacked on mobile)
+  - Tab 2: Item Preview/Details (auto-switches when item is clicked)
+  - Smooth tab switching with visual indicators
+- **Mobile-First Design**: Optimized for native app-like experience
+  - Collections panel: 30vh on mobile, scrollable
+  - Items panel: Flexible height with proper scrolling
+  - Touch-friendly spacing and sizing
+  - Responsive header and actions
+- **Auto-Tab Switching**: Automatically switches to preview tab when item is clicked
+- **Improved Item Selection**: Visual feedback with active state highlighting
+
+### Changed
+
+- **Dashboard Layout**: From split-view to tab-based system
+- **Mobile Experience**: Native app-like feel with better touch interactions
+- **Visual Hierarchy**: Better organization with tab navigation
+- **Item Details**: Now displayed in dedicated preview tab instead of inline
+
+### Fixed
+
+- Mobile layout now properly responsive with tab system
+- Better space utilization on all screen sizes
+- Improved touch targets for mobile users
+
+## [2.1.0] - 2025-11-18
+
+### Added
+
+- **Responsive Mobile UI**: Complete overhaul of dashboard layout for mobile devices
+  - Collections and items panels now stack vertically on mobile (< 768px)
+  - Collections panel constrained to 35vh with flexible item panel
+  - Proper scrolling behavior for both panels on mobile
+- **Search Functionality**: Real-time search across bookmarks
+  - Search by title, excerpt, or tags
+  - Instant filtering as you type
+  - Smart matching across multiple fields
+- **Enhanced Tag Management**: Improved tag visibility and management
+  - Tags now display prominently in item detail view
+  - Better visual styling with hover effects
+  - Edit button prepared for future tag assignment features
+  - Clear messaging for items with no tags
+- **Improved Add Button**: Now fully functional
+  - Opens bookmark creation modal when clicked
+  - Proper command execution
+- **CSS Improvements**: Added standard `line-clamp` property for better compatibility
+
+### Changed
+
+- **Mobile Layout**: Improved responsive design with proper media queries
+- **Dashboard Header**: Better organized with search bar and action buttons
+- **Item Detail View**: Enhanced tag section with edit capabilities
+- **Visual Hierarchy**: Improved spacing and typography throughout
+
+### Fixed
+
+- ✅ Mobile UI broken - bottom half split view now responsive
+- ✅ Add button not working - now executes add-new-bookmark command
+- ✅ Search bar not functional - full search implementation
+- ✅ Tags list not visible - enhanced visibility with edit options
+- ✅ Mobile layout issues - proper flex constraints and scrolling
+- ✅ CSS compatibility warnings - added standard line-clamp property
+
 ## [1.7.1] - 2025-05-27
 
 ### Added

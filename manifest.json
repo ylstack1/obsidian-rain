@@ -1,9 +1,9 @@
 {
 	"id": "make-it-rain",
 	"name": "Make It Rain - Enhanced",
-	"version": "2.0.0",
+	"version": "2.2.0",
 	"minAppVersion": "0.15.0",
-	"description": "Enhanced Raindrop.io Integration with MDX support, modern UI, and responsive design",
+	"description": "Enhanced Raindrop.io Integration with tab-based dashboard, mobile-first design, and real-time search",
 	"author": "frostmute",
 	"authorUrl": "https://github.com/frostmute/make-it-rain",
 	"fundingUrl": "https://www.buymeacoffee.com/frostmute",

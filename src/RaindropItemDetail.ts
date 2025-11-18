@@ -100,13 +100,27 @@ export class RaindropItemDetail {
             content.createEl('p', { text: item.note, cls: 'raindrop-personal-note' });
         }
 
-        // Tags
+        // Tags Section with Edit Button
+        const tagsSection = content.createDiv();
+        const tagsHeader = tagsSection.createDiv({ cls: 'raindrop-tags-header' });
+        tagsHeader.createEl('h3', { text: 'Tags' });
+        
+        const editTagsBtn = tagsHeader.createEl('button', { cls: 'raindrop-tag-edit-btn' });
+        setIcon(editTagsBtn, 'edit');
+        setTooltip(editTagsBtn, 'Edit Tags');
+        editTagsBtn.onclick = () => {
+            // Open tag assignment modal
+            new Notice('Tag editing coming soon!', 2000);
+        };
+        
         if (item.tags && item.tags.length > 0) {
-            content.createEl('h3', { text: 'Tags' });
-            const tagsEl = content.createDiv({ cls: 'raindrop-item-tags' });
+            const tagsEl = tagsSection.createDiv({ cls: 'raindrop-item-tags' });
             item.tags.forEach(tag => {
-                tagsEl.createSpan({ text: `#${tag}`, cls: 'raindrop-tag' });
+                const tagEl = tagsEl.createSpan({ text: `#${tag}`, cls: 'raindrop-tag' });
+                tagEl.title = tag;
             });
+        } else {
+            tagsSection.createEl('p', { text: 'No tags assigned', cls: 'raindrop-no-tags' });
         }
 
         // Cover Image

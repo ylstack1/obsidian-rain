@@ -130,12 +130,23 @@ var RaindropItemDetail = class {
       content.createEl("h3", { text: "Personal Note" });
       content.createEl("p", { text: item.note, cls: "raindrop-personal-note" });
     }
+    const tagsSection = content.createDiv();
+    const tagsHeader = tagsSection.createDiv({ cls: "raindrop-tags-header" });
+    tagsHeader.createEl("h3", { text: "Tags" });
+    const editTagsBtn = tagsHeader.createEl("button", { cls: "raindrop-tag-edit-btn" });
+    (0, import_obsidian.setIcon)(editTagsBtn, "edit");
+    (0, import_obsidian.setTooltip)(editTagsBtn, "Edit Tags");
+    editTagsBtn.onclick = () => {
+      new import_obsidian.Notice("Tag editing coming soon!", 2e3);
+    };
     if (item.tags && item.tags.length > 0) {
-      content.createEl("h3", { text: "Tags" });
-      const tagsEl = content.createDiv({ cls: "raindrop-item-tags" });
+      const tagsEl = tagsSection.createDiv({ cls: "raindrop-item-tags" });
       item.tags.forEach((tag) => {
-        tagsEl.createSpan({ text: `#${tag}`, cls: "raindrop-tag" });
+        const tagEl = tagsEl.createSpan({ text: `#${tag}`, cls: "raindrop-tag" });
+        tagEl.title = tag;
       });
+    } else {
+      tagsSection.createEl("p", { text: "No tags assigned", cls: "raindrop-no-tags" });
     }
     if (item.cover) {
       content.createEl("h3", { text: "Cover Image" });
@@ -173,6 +184,10 @@ var RaindropView = class extends import_obsidian2.ItemView {
     // parentId -> childrenIds
     this.itemsByCollection = /* @__PURE__ */ new Map();
     this.activeCollectionId = null;
+    this.activeItem = null;
+    this.searchInput = null;
+    this.filteredItems = [];
+    this.currentTab = "list";
     this.plugin = plugin;
     this.contentEl = this.containerEl.children[1];
     this.contentEl.addClass("raindrop-dashboard");
@@ -192,29 +207,82 @@ var RaindropView = class extends import_obsidian2.ItemView {
   }
   async onClose() {
   }
+  handleSearch() {
+    if (!this.searchInput || !this.activeCollectionId) return;
+    const searchTerm = this.searchInput.value.toLowerCase().trim();
+    const items = this.itemsByCollection.get(this.activeCollectionId) || [];
+    if (!searchTerm) {
+      this.filteredItems = items;
+    } else {
+      this.filteredItems = items.filter(
+        (item) => {
+          var _a5, _b;
+          return item.title.toLowerCase().includes(searchTerm) || ((_a5 = item.excerpt) == null ? void 0 : _a5.toLowerCase().includes(searchTerm)) || ((_b = item.tags) == null ? void 0 : _b.some((tag) => tag.toLowerCase().includes(searchTerm)));
+        }
+      );
+    }
+    const itemsListContainer = document.getElementById("raindrop-items-list");
+    if (itemsListContainer) {
+      this.renderItemList(this.filteredItems, itemsListContainer);
+    }
+  }
+  switchTab(tab) {
+    var _a5, _b, _c, _d, _e;
+    this.currentTab = tab;
+    const tabBtns = (_a5 = this.tabsContainer.parentElement) == null ? void 0 : _a5.querySelectorAll(".raindrop-tab-btn");
+    tabBtns == null ? void 0 : tabBtns.forEach((btn) => btn.removeClass("active"));
+    if (tab === "list") {
+      (_c = (_b = this.tabsContainer.parentElement) == null ? void 0 : _b.querySelector(".raindrop-tab-btn:nth-child(1)")) == null ? void 0 : _c.addClass("active");
+    } else {
+      (_e = (_d = this.tabsContainer.parentElement) == null ? void 0 : _d.querySelector(".raindrop-tab-btn:nth-child(2)")) == null ? void 0 : _e.addClass("active");
+    }
+    this.listTabContent.removeClass("active");
+    this.previewTabContent.removeClass("active");
+    if (tab === "list") {
+      this.listTabContent.addClass("active");
+    } else {
+      this.previewTabContent.addClass("active");
+    }
+  }
   async renderDashboard() {
     this.contentEl.empty();
     const header = this.contentEl.createDiv({ cls: "raindrop-header" });
     header.createEl("h1", { text: "RainSidian Dashboard" });
     const actions = header.createDiv({ cls: "raindrop-actions" });
     const searchBar = actions.createDiv({ cls: "raindrop-search-bar" });
-    searchBar.createEl("input", {
+    const searchInput = searchBar.createEl("input", {
       type: "text",
       placeholder: "Search bookmarks...",
       cls: "search-input"
     });
     (0, import_obsidian2.setIcon)(searchBar.createSpan({ cls: "search-icon" }), "search");
+    this.searchInput = searchInput;
+    searchInput.addEventListener("input", () => this.handleSearch());
     const addButton = actions.createEl("button", { text: "Add New", cls: "mod-cta" });
     (0, import_obsidian2.setIcon)(addButton, "plus");
-    addButton.onclick = () => {
+    addButton.onclick = async () => {
       this.plugin.app.commands.executeCommandById("raindrop-to-obsidian:add-new-bookmark");
     };
     const mainContent = this.contentEl.createDiv({ cls: "raindrop-main-content" });
-    const leftPanel = mainContent.createDiv({ cls: "raindrop-left-panel" });
-    leftPanel.createEl("h2", { text: "Collections" });
-    this.treeContainer = leftPanel.createDiv({ cls: "raindrop-tree-container" });
-    this.rightPanel = mainContent.createDiv({ cls: "raindrop-right-panel" });
-    this.itemDetailView = new RaindropItemDetail(this.rightPanel, this.plugin);
+    const tabNav = mainContent.createDiv({ cls: "raindrop-tab-nav" });
+    const listTabBtn = tabNav.createEl("button", { text: "Collections & List", cls: "raindrop-tab-btn active" });
+    listTabBtn.onclick = () => this.switchTab("list");
+    const previewTabBtn = tabNav.createEl("button", { text: "Preview", cls: "raindrop-tab-btn" });
+    previewTabBtn.onclick = () => this.switchTab("preview");
+    this.tabsContainer = mainContent.createDiv({ cls: "raindrop-tabs-container" });
+    this.listTabContent = this.tabsContainer.createDiv({ cls: "raindrop-tab-content active" });
+    this.listTabContent.setAttr("data-tab", "list");
+    const listLayout = this.listTabContent.createDiv({ cls: "raindrop-list-layout" });
+    const collectionsPanel = listLayout.createDiv({ cls: "raindrop-collections-panel" });
+    collectionsPanel.createEl("h2", { text: "Collections" });
+    this.treeContainer = collectionsPanel.createDiv({ cls: "raindrop-tree-container" });
+    const itemsPanel = listLayout.createDiv({ cls: "raindrop-items-panel" });
+    itemsPanel.createEl("h2", { text: "Bookmarks" });
+    const itemsListContainer = itemsPanel.createDiv({ cls: "raindrop-items-list-container" });
+    itemsListContainer.id = "raindrop-items-list";
+    this.previewTabContent = this.tabsContainer.createDiv({ cls: "raindrop-tab-content" });
+    this.previewTabContent.setAttr("data-tab", "preview");
+    this.itemDetailView = new RaindropItemDetail(this.previewTabContent, this.plugin);
     this.itemDetailView.clear();
     await this.fetchAndRenderCollections(this.treeContainer, true);
   }
@@ -274,26 +342,30 @@ var RaindropView = class extends import_obsidian2.ItemView {
     this.activeCollectionId = collectionId;
     const newActiveEl = this.treeContainer.querySelector(`.tree-item-self[data-collection-id="${this.activeCollectionId}"]`);
     newActiveEl == null ? void 0 : newActiveEl.addClass("is-active");
-    this.rightPanel.empty();
-    const collection = this.collectionMap.get(collectionId);
-    this.rightPanel.createEl("h2", { text: (collection == null ? void 0 : collection.title) || "Collection Items" });
-    const loadingEl = this.rightPanel.createEl("p", { text: "Fetching bookmarks..." });
+    const itemsListContainer = document.getElementById("raindrop-items-list");
+    if (!itemsListContainer) return;
+    itemsListContainer.empty();
+    const loadingEl = itemsListContainer.createEl("p", { text: "Fetching bookmarks..." });
     try {
       const items = await this.plugin.fetchCollectionItems(collectionId);
       this.itemsByCollection.set(collectionId, items);
+      this.filteredItems = items;
       loadingEl.remove();
-      this.renderItemList(items, this.rightPanel);
+      this.renderItemList(items, itemsListContainer);
     } catch (error) {
       loadingEl.remove();
-      this.rightPanel.createEl("p", { text: "Error fetching bookmarks.", cls: "mod-error" });
+      itemsListContainer.createEl("p", { text: "Error fetching bookmarks.", cls: "mod-error" });
       console.error("Error fetching items for collection:", error);
     }
   }
   showItemDetail(item) {
+    this.activeItem = item;
     this.itemDetailView.render(item);
-    this.rightPanel.querySelectorAll(".raindrop-item-card.is-active").forEach((el) => el.removeClass("is-active"));
-    const activeCard = this.rightPanel.querySelector(`.raindrop-item-card[data-item-id="${item._id}"]`);
+    const itemsListContainer = document.getElementById("raindrop-items-list");
+    itemsListContainer == null ? void 0 : itemsListContainer.querySelectorAll(".raindrop-item-card.is-active").forEach((el) => el.removeClass("is-active"));
+    const activeCard = itemsListContainer == null ? void 0 : itemsListContainer.querySelector(`.raindrop-item-card[data-item-id="${item._id}"]`);
     activeCard == null ? void 0 : activeCard.addClass("is-active");
+    this.switchTab("preview");
   }
   renderItemList(items, container) {
     container.empty();
@@ -10821,7 +10893,7 @@ var OpenElementStack = class {
   get currentTmplContentOrNode() {
     return this._isInTemplate() ? this.treeAdapter.getTemplateContent(this.current) : this.current;
   }
-  constructor(document, treeAdapter, handler) {
+  constructor(document2, treeAdapter, handler) {
     this.treeAdapter = treeAdapter;
     this.handler = handler;
     this.items = [];
@@ -10829,7 +10901,7 @@ var OpenElementStack = class {
     this.stackTop = -1;
     this.tmplCount = 0;
     this.currentTagId = TAG_ID.UNKNOWN;
-    this.current = document;
+    this.current = document2;
   }
   //Index of element
   _indexOf(element) {
@@ -11263,8 +11335,8 @@ var defaultTreeAdapter = {
   getTemplateContent(templateElement) {
     return templateElement.content;
   },
-  setDocumentType(document, name, publicId, systemId) {
-    const doctypeNode = document.childNodes.find((node) => node.nodeName === "#documentType");
+  setDocumentType(document2, name, publicId, systemId) {
+    const doctypeNode = document2.childNodes.find((node) => node.nodeName === "#documentType");
     if (doctypeNode) {
       doctypeNode.name = name;
       doctypeNode.publicId = publicId;
@@ -11277,14 +11349,14 @@ var defaultTreeAdapter = {
         systemId,
         parentNode: null
       };
-      defaultTreeAdapter.appendChild(document, node);
+      defaultTreeAdapter.appendChild(document2, node);
     }
   },
-  setDocumentMode(document, mode) {
-    document.mode = mode;
+  setDocumentMode(document2, mode) {
+    document2.mode = mode;
   },
-  getDocumentMode(document) {
-    return document.mode;
+  getDocumentMode(document2) {
+    return document2.mode;
   },
   detachNode(node) {
     if (node.parentNode) {
@@ -11764,7 +11836,7 @@ var defaultParserOptions = {
   onParseError: null
 };
 var Parser2 = class {
-  constructor(options, document, fragmentContext = null, scriptHandler = null) {
+  constructor(options, document2, fragmentContext = null, scriptHandler = null) {
     this.fragmentContext = fragmentContext;
     this.scriptHandler = scriptHandler;
     this.currentToken = null;
@@ -11789,7 +11861,7 @@ var Parser2 = class {
     if (this.onParseError) {
       this.options.sourceCodeLocationInfo = true;
     }
-    this.document = document !== null && document !== void 0 ? document : this.treeAdapter.createDocument();
+    this.document = document2 !== null && document2 !== void 0 ? document2 : this.treeAdapter.createDocument();
     this.tokenizer = new Tokenizer2(this.options, this);
     this.activeFormattingElements = new FormattingElementList(this.treeAdapter);
     this.fragmentContextID = fragmentContext ? getTagID(this.treeAdapter.getTagName(fragmentContext)) : TAG_ID.UNKNOWN;
@@ -14982,24 +15054,24 @@ var adapter = {
   getTemplateContent(templateElement) {
     return templateElement.children[0];
   },
-  setDocumentType(document, name, publicId, systemId) {
+  setDocumentType(document2, name, publicId, systemId) {
     const data2 = serializeDoctypeContent(name, publicId, systemId);
-    let doctypeNode = document.children.find((node) => isDirective(node) && node.name === "!doctype");
+    let doctypeNode = document2.children.find((node) => isDirective(node) && node.name === "!doctype");
     if (doctypeNode) {
       doctypeNode.data = data2 !== null && data2 !== void 0 ? data2 : null;
     } else {
       doctypeNode = new ProcessingInstruction("!doctype", data2);
-      adapter.appendChild(document, doctypeNode);
+      adapter.appendChild(document2, doctypeNode);
     }
     doctypeNode["x-name"] = name;
     doctypeNode["x-publicId"] = publicId;
     doctypeNode["x-systemId"] = systemId;
   },
-  setDocumentMode(document, mode) {
-    document["x-mode"] = mode;
+  setDocumentMode(document2, mode) {
+    document2["x-mode"] = mode;
   },
-  getDocumentMode(document) {
-    return document["x-mode"];
+  getDocumentMode(document2) {
+    return document2["x-mode"];
   },
   detachNode(node) {
     if (node.parent) {

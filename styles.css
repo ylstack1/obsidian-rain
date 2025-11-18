@@ -236,6 +236,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    background: var(--background-primary);
 }
 
 .raindrop-header {
@@ -263,6 +264,119 @@
     margin: 0;
     padding: 8px 12px;
 }
+
+/* --- Tab Navigation --- */
+
+.raindrop-main-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.raindrop-tab-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--background-modifier-border);
+    background: var(--background-primary-alt);
+    padding: 0;
+    margin: 0;
+}
+
+.raindrop-tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--font-ui-medium);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.raindrop-tab-btn:hover {
+    background: var(--raindrop-bg-hover);
+    color: var(--text-normal);
+}
+
+.raindrop-tab-btn.active {
+    color: var(--raindrop-primary);
+    border-bottom-color: var(--raindrop-primary);
+    background: var(--raindrop-bg-card);
+}
+
+/* --- Tab Content --- */
+
+.raindrop-tabs-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.raindrop-tab-content {
+    display: none;
+    flex: 1;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.raindrop-tab-content.active {
+    display: flex;
+}
+
+/* --- List Tab Layout --- */
+
+.raindrop-list-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    gap: 0;
+}
+
+.raindrop-collections-panel {
+    flex: 0 0 280px;
+    border-right: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+    min-width: 200px;
+}
+
+.raindrop-collections-panel h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: var(--font-title-small);
+    color: var(--text-normal);
+    border-bottom: 1px solid var(--background-modifier-border);
+    padding-bottom: 8px;
+}
+
+.raindrop-items-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 12px;
+}
+
+.raindrop-items-panel h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: var(--font-title-small);
+    color: var(--text-normal);
+}
+
+.raindrop-items-list-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* --- Main Content (old style, kept for compatibility) --- */
 
 .raindrop-main-content {
     display: flex;
@@ -351,6 +465,7 @@
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2; /* Limit to 2 lines */
+    line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 
@@ -586,23 +701,132 @@
 @media (max-width: 768px) {
     .raindrop-split-view {
         flex-direction: column;
+        height: 100%;
     }
     
     .raindrop-collections-panel {
         width: 100%;
         max-width: none;
-        max-height: 200px;
+        max-height: 35vh;
+        min-height: 120px;
         border-right: none;
         border-bottom: 1px solid var(--background-modifier-border);
+        flex-shrink: 0;
     }
     
     .raindrop-items-panel {
         min-width: 100%;
         border-right: none;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
     }
     
     .raindrop-detail-panel {
         display: none; /* Hidden on mobile - use modal instead */
+    }
+    
+    .raindrop-main-content {
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .raindrop-left-panel {
+        flex: 0 0 auto;
+        max-height: 35vh;
+        min-height: 120px;
+        border-right: none;
+        border-bottom: 1px solid var(--background-modifier-border);
+        overflow-y: auto;
+    }
+    
+    .raindrop-right-panel {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    
+    /* Mobile Tab Layout */
+    .raindrop-tab-nav {
+        display: flex;
+        gap: 0;
+        border-bottom: 2px solid var(--background-modifier-border);
+    }
+    
+    .raindrop-tab-btn {
+        flex: 1;
+        padding: 10px 12px;
+        font-size: var(--font-ui-small);
+    }
+    
+    .raindrop-list-layout {
+        flex-direction: column;
+    }
+    
+    .raindrop-collections-panel {
+        flex: 0 0 auto;
+        max-height: 30vh;
+        min-height: 100px;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--background-modifier-border);
+        padding: 8px;
+    }
+    
+    .raindrop-collections-panel h2 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: var(--font-ui-medium);
+    }
+    
+    .raindrop-items-panel {
+        flex: 1;
+        width: 100%;
+        border-right: none;
+        padding: 8px;
+    }
+    
+    .raindrop-items-panel h2 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: var(--font-ui-medium);
+    }
+    
+    .raindrop-items-list-container {
+        flex: 1;
+        overflow-y: auto;
+    }
+    
+    .raindrop-item-card {
+        padding: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .raindrop-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+    
+    .raindrop-header h1 {
+        font-size: 1.3em;
+        margin: 0;
+    }
+    
+    .raindrop-actions {
+        width: 100%;
+        gap: 8px;
+    }
+    
+    .raindrop-search-bar {
+        flex: 1;
+    }
+    
+    .raindrop-actions .mod-cta {
+        padding: 8px 12px;
+        font-size: var(--font-ui-small);
     }
 }
 
@@ -750,6 +974,7 @@
     margin-bottom: 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -760,6 +985,7 @@
     margin-bottom: 8px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -983,6 +1209,32 @@
 }
 
 /* Tags Display */
+.raindrop-tags-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.raindrop-tags-header h3 {
+    margin: 0;
+}
+
+.raindrop-tag-edit-btn {
+    background: transparent;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.raindrop-tag-edit-btn:hover {
+    background: var(--raindrop-bg-hover);
+    color: var(--raindrop-primary);
+}
+
 .raindrop-item-tags {
     display: flex;
     flex-wrap: wrap;
@@ -999,12 +1251,19 @@
     font-weight: 500;
     border: 1px solid var(--raindrop-border);
     transition: all 0.2s ease;
+    display: inline-block;
 }
 
 .raindrop-tag:hover {
     background: var(--raindrop-primary);
     color: white;
     transform: translateY(-1px);
+}
+
+.raindrop-no-tags {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9em;
 }
 
 /* Personal Note Styling */

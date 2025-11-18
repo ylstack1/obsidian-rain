@@ -12,8 +12,14 @@ export class RaindropView extends ItemView {
     private collectionHierarchy: Map<number, number[]> = new Map(); // parentId -> childrenIds
     private itemsByCollection: Map<number, RaindropItem[]> = new Map();
     private activeCollectionId: number | null = null;
+    private activeItem: RaindropItem | null = null;
     private treeContainer: HTMLElement;
-    private rightPanel: HTMLElement;
+    private searchInput: HTMLInputElement | null = null;
+    private filteredItems: RaindropItem[] = [];
+    private currentTab: 'list' | 'preview' = 'list';
+    private tabsContainer: HTMLElement;
+    private listTabContent: HTMLElement;
+    private previewTabContent: HTMLElement;
     private itemDetailView: RaindropItemDetail;
     contentEl: HTMLElement;
 
@@ -45,6 +51,53 @@ export class RaindropView extends ItemView {
         // Clean up any event listeners if necessary
     }
 
+    private handleSearch() {
+        if (!this.searchInput || !this.activeCollectionId) return;
+        
+        const searchTerm = this.searchInput.value.toLowerCase().trim();
+        const items = this.itemsByCollection.get(this.activeCollectionId) || [];
+        
+        if (!searchTerm) {
+            this.filteredItems = items;
+        } else {
+            this.filteredItems = items.filter(item => 
+                item.title.toLowerCase().includes(searchTerm) ||
+                item.excerpt?.toLowerCase().includes(searchTerm) ||
+                item.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
+            );
+        }
+        
+        // Re-render the item list with filtered results
+        const itemsListContainer = document.getElementById('raindrop-items-list');
+        if (itemsListContainer) {
+            this.renderItemList(this.filteredItems, itemsListContainer);
+        }
+    }
+
+    private switchTab(tab: 'list' | 'preview') {
+        this.currentTab = tab;
+        
+        // Update tab buttons
+        const tabBtns = this.tabsContainer.parentElement?.querySelectorAll('.raindrop-tab-btn');
+        tabBtns?.forEach((btn: any) => btn.removeClass('active'));
+        
+        if (tab === 'list') {
+            (this.tabsContainer.parentElement?.querySelector('.raindrop-tab-btn:nth-child(1)') as any)?.addClass('active');
+        } else {
+            (this.tabsContainer.parentElement?.querySelector('.raindrop-tab-btn:nth-child(2)') as any)?.addClass('active');
+        }
+        
+        // Update tab content
+        this.listTabContent.removeClass('active');
+        this.previewTabContent.removeClass('active');
+        
+        if (tab === 'list') {
+            this.listTabContent.addClass('active');
+        } else {
+            this.previewTabContent.addClass('active');
+        }
+    }
+
     private async renderDashboard() {
         this.contentEl.empty();
         
@@ -56,32 +109,61 @@ export class RaindropView extends ItemView {
         
         // Search Bar
         const searchBar = actions.createDiv({ cls: 'raindrop-search-bar' });
-        searchBar.createEl('input', { 
+        const searchInput = searchBar.createEl('input', { 
             type: 'text', 
             placeholder: 'Search bookmarks...',
             cls: 'search-input'
-        });
+        }) as HTMLInputElement;
         setIcon(searchBar.createSpan({ cls: 'search-icon' }), 'search');
+        
+        // Store search input for filtering
+        this.searchInput = searchInput;
+        searchInput.addEventListener('input', () => this.handleSearch());
 
         // Add New Button
         const addButton = actions.createEl('button', { text: 'Add New', cls: 'mod-cta' });
         setIcon(addButton, 'plus');
-        addButton.onclick = () => {
+        addButton.onclick = async () => {
             (this.plugin.app as any).commands.executeCommandById('raindrop-to-obsidian:add-new-bookmark');
         };
 
-        // Main Content: Split View
+        // Main Content: Tab-based Layout
         const mainContent = this.contentEl.createDiv({ cls: 'raindrop-main-content' });
         
-        // Left Panel: Tree View
-        const leftPanel = mainContent.createDiv({ cls: 'raindrop-left-panel' });
-        leftPanel.createEl('h2', { text: 'Collections' });
-        this.treeContainer = leftPanel.createDiv({ cls: 'raindrop-tree-container' });
+        // Tab Navigation
+        const tabNav = mainContent.createDiv({ cls: 'raindrop-tab-nav' });
         
-        // Right Panel: Item List
-        this.rightPanel = mainContent.createDiv({ cls: 'raindrop-right-panel' });
-        this.itemDetailView = new RaindropItemDetail(this.rightPanel, this.plugin);
-        this.itemDetailView.clear(); // Set initial state
+        const listTabBtn = tabNav.createEl('button', { text: 'Collections & List', cls: 'raindrop-tab-btn active' });
+        listTabBtn.onclick = () => this.switchTab('list');
+        
+        const previewTabBtn = tabNav.createEl('button', { text: 'Preview', cls: 'raindrop-tab-btn' });
+        previewTabBtn.onclick = () => this.switchTab('preview');
+
+        // Tab Content Container
+        this.tabsContainer = mainContent.createDiv({ cls: 'raindrop-tabs-container' });
+        
+        // Tab 1: Collections & List
+        this.listTabContent = this.tabsContainer.createDiv({ cls: 'raindrop-tab-content active' });
+        this.listTabContent.setAttr('data-tab', 'list');
+        
+        const listLayout = this.listTabContent.createDiv({ cls: 'raindrop-list-layout' });
+        
+        // Left: Collections Tree
+        const collectionsPanel = listLayout.createDiv({ cls: 'raindrop-collections-panel' });
+        collectionsPanel.createEl('h2', { text: 'Collections' });
+        this.treeContainer = collectionsPanel.createDiv({ cls: 'raindrop-tree-container' });
+        
+        // Right: Items List
+        const itemsPanel = listLayout.createDiv({ cls: 'raindrop-items-panel' });
+        itemsPanel.createEl('h2', { text: 'Bookmarks' });
+        const itemsListContainer = itemsPanel.createDiv({ cls: 'raindrop-items-list-container' });
+        itemsListContainer.id = 'raindrop-items-list';
+        
+        // Tab 2: Preview/Details
+        this.previewTabContent = this.tabsContainer.createDiv({ cls: 'raindrop-tab-content' });
+        this.previewTabContent.setAttr('data-tab', 'preview');
+        this.itemDetailView = new RaindropItemDetail(this.previewTabContent, this.plugin);
+        this.itemDetailView.clear();
 
         // Fetch and render collections
         await this.fetchAndRenderCollections(this.treeContainer, true);
@@ -154,43 +236,49 @@ export class RaindropView extends ItemView {
 
     private async setActiveCollection(collectionId: number) {
         // Remove active class from previous active collection
-        this.treeContainer.querySelectorAll('.tree-item-self.is-active').forEach(el => el.removeClass('is-active'));
+        this.treeContainer.querySelectorAll('.tree-item-self.is-active').forEach((el: any) => el.removeClass('is-active'));
 
         this.activeCollectionId = collectionId;
         
         // Add active class to new active collection
         const newActiveEl = this.treeContainer.querySelector(`.tree-item-self[data-collection-id="${this.activeCollectionId}"]`);
-        newActiveEl?.addClass('is-active');
+        (newActiveEl as any)?.addClass('is-active');
         
-        // Update the right panel
-        this.rightPanel.empty();
-        const collection = this.collectionMap.get(collectionId);
-        this.rightPanel.createEl('h2', { text: collection?.title || 'Collection Items' });
+        // Update the items list container
+        const itemsListContainer = document.getElementById('raindrop-items-list');
+        if (!itemsListContainer) return;
         
-        const loadingEl = this.rightPanel.createEl('p', { text: 'Fetching bookmarks...' });
+        itemsListContainer.empty();
+        const loadingEl = itemsListContainer.createEl('p', { text: 'Fetching bookmarks...' });
         
         try {
             const items = await this.plugin.fetchCollectionItems(collectionId);
             this.itemsByCollection.set(collectionId, items);
+            this.filteredItems = items;
             loadingEl.remove();
-            this.renderItemList(items, this.rightPanel);
+            this.renderItemList(items, itemsListContainer);
             
         } catch (error) {
             loadingEl.remove();
-            this.rightPanel.createEl('p', { text: 'Error fetching bookmarks.', cls: 'mod-error' });
+            itemsListContainer.createEl('p', { text: 'Error fetching bookmarks.', cls: 'mod-error' });
             console.error('Error fetching items for collection:', error);
         }
     }
 
     private showItemDetail(item: RaindropItem) {
+        this.activeItem = item;
         this.itemDetailView.render(item);
         
         // Remove active class from all item cards
-        this.rightPanel.querySelectorAll('.raindrop-item-card.is-active').forEach(el => el.removeClass('is-active'));
+        const itemsListContainer = document.getElementById('raindrop-items-list');
+        itemsListContainer?.querySelectorAll('.raindrop-item-card.is-active').forEach((el: any) => el.removeClass('is-active'));
         
         // Add active class to the selected item card
-        const activeCard = this.rightPanel.querySelector(`.raindrop-item-card[data-item-id="${item._id}"]`);
-        activeCard?.addClass('is-active');
+        const activeCard = itemsListContainer?.querySelector(`.raindrop-item-card[data-item-id="${item._id}"]`);
+        (activeCard as any)?.addClass('is-active');
+        
+        // Auto-switch to preview tab
+        this.switchTab('preview');
     }
 
     private renderItemList(items: RaindropItem[], container: HTMLElement) {
