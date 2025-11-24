@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ItemView, WorkspaceLeaf, Notice } from 'obsidian';
 import { ModernDashboard } from './components/ModernDashboard';
-import { RaindropCollection, RaindropItem } from './types';
+import { RaindropCollection, RaindropItem } from '../src/types';
 import type { IRaindropToObsidian } from './main';
 
 export const RAINDROP_VIEW_TYPE = 'raindrop-modern-view';

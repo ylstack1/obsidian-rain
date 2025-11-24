@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, Download, Edit3, Tag, Calendar, Clock, Bookmark, Share2 } from 'lucide-react';
 import clsx from 'clsx';
-import { RaindropItem } from '../types';
+import { RaindropItem } from '../../src/types';
 
 interface ItemDetailModalProps {
   item: RaindropItem | null;
