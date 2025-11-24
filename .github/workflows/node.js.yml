@@ -17,6 +17,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup GitHub Credentials
+        run: |
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,29 +33,27 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # ✨ Make sure workspace is clean  
+      # Clean workspace
       - name: Reset working directory
         run: git reset --hard
 
-      # ✨ FIX: Git identity is required for npm version
-      - name: Configure Git identity
-        run: |
-          git config user.email "github-actions@github.com"
-          git config user.name "GitHub Actions"
-
+      # Bump version
       - name: Bump version
         id: version
         run: |
           NEW_VERSION=$(npm version patch -m "chore: release %s")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Push tags
+      # Push commit + tags
+      - name: Push version commit and tag
         run: |
-          git push origin main --follow-tags
+          git push origin main
+          git push origin --tags
 
       - name: Build project
         run: npm run build
 
+      # Upload individual build files
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
