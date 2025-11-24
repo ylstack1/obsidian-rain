@@ -1,6 +1,8 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
+import fs from "fs";
+import path from "path";
 
 const banner =
 `/*
@@ -10,49 +12,114 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = process.argv[2] === "production";
+const outDir = "build";
+
+// Ensure output directory exists
+if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir);
+}
 
 const context = await esbuild.context({
-	banner: {
-		js: banner,
-	},
-	entryPoints: ["src/main.ts"],
-	bundle: true,
-	external: [
-		"obsidian",
-		"electron",
-		"@codemirror/autocomplete",
-		"@codemirror/collab",
-		"@codemirror/commands",
-		"@codemirror/language",
-		"@codemirror/lint",
-		"@codemirror/search",
-		"@codemirror/state",
-		"@codemirror/view",
-		"@lezer/common",
-		"@lezer/highlight",
-		"@lezer/lr",
-		...builtins],
-	format: "cjs",
-	target: "es2018",
-	logLevel: "info",
-	sourcemap: prod ? false : "inline",
-	treeShaking: true,
-	outfile: "build/main.js",
+    banner: {
+        js: banner,
+    },
+    entryPoints: ["src/main.ts"],
+    bundle: true,
+    external: [
+        "obsidian",
+        "electron",
+        "@codemirror/autocomplete",
+        "@codemirror/collab",
+        "@codemirror/commands",
+        "@codemirror/language",
+        "@codemirror/lint",
+        "@codemirror/search",
+        "@codemirror/state",
+        "@codemirror/view",
+        "@lezer/common",
+        "@lezer/highlight",
+        "@lezer/lr",
+        ...builtins],
+    format: "cjs",
+    target: "es2018",
+    logLevel: "info",
+    sourcemap: prod ? false : "inline",
+    treeShaking: true,
+    minify: prod,
+    outfile: `${outDir}/main.js`,
 });
 
 // Add output for styles.css
+const styleEntryPoints = ["styles.css"];
+if (fs.existsSync("styles_modern.css")) {
+    styleEntryPoints.push("styles_modern.css");
+}
+
 const styleContext = await esbuild.context({
-	entryPoints: ["styles.css"],
-	bundle: true,
-	outfile: "build/styles.css",
-	logLevel: "info",
+    entryPoints: styleEntryPoints,
+    bundle: true,
+    outdir: outDir,
+    logLevel: "info",
+    minify: prod,
 });
 
+function copyFiles() {
+    const filesToCopy = [
+        "manifest.json",
+        "versions.json"
+    ];
+
+    console.log("Copying static files...");
+    filesToCopy.forEach(file => {
+        if (fs.existsSync(file)) {
+            fs.copyFileSync(file, path.join(outDir, file));
+            console.log(`Copied ${file} to ${outDir}`);
+        } else {
+            console.warn(`Warning: ${file} not found`);
+        }
+    });
+}
+
+function generateReleaseManifest() {
+    if (!prod) return;
+    
+    const releaseFiles = [
+        "main.js",
+        "manifest.json",
+        "styles.css",
+        "versions.json"
+    ];
+    
+    // Check if styles_modern.css was copied
+    if (fs.existsSync(path.join(outDir, "styles_modern.css"))) {
+        releaseFiles.push("styles_modern.css");
+    }
+
+    const manifestContent = `Plugin Release Files
+Version: ${JSON.parse(fs.readFileSync("manifest.json")).version}
+Date: ${new Date().toISOString()}
+
+Files:
+${releaseFiles.map(f => `- ${f}`).join("\n")}
+
+Installation:
+1. Create a folder 'make-it-rain' in your Obsidian vault's .obsidian/plugins/ directory.
+2. Copy all the files listed above into that folder.
+3. Reload Obsidian and enable the plugin.
+`;
+
+    fs.writeFileSync(path.join(outDir, "release-files.txt"), manifestContent);
+    console.log("Generated release-files.txt");
+}
+
 if (prod) {
-	await context.rebuild();
-	await styleContext.rebuild();
-	process.exit(0);
+    await context.rebuild();
+    await styleContext.rebuild();
+    copyFiles();
+    generateReleaseManifest();
+    process.exit(0);
 } else {
-	await context.watch();
-	await styleContext.watch();
+    await context.watch();
+    await styleContext.watch();
+    copyFiles();
 } 

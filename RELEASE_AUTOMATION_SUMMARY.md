@@ -150,13 +150,13 @@ npm run release
 
 📌 Version: 2.2.0
 🏷️  Tag: v2.2.0
-📂 Build output: dist/
+📂 Build output: build/
 
 📦 Release files:
-  - dist/main.js
-  - dist/manifest.json
-  - dist/styles.css
-  - dist/styles_modern.css
+  - build/main.js
+  - build/manifest.json
+  - build/styles.css
+  - build/styles_modern.css
 
 🔗 GitHub: https://github.com/frostmute/make-it-rain/releases/tag/v2.2.0
 
@@ -176,7 +176,7 @@ npm run release
 The release includes all built files:
 
 ```
-dist/
+build/
 ├── main.js              (730 KB - Compiled plugin)
 ├── manifest.json        (380 B - Plugin metadata)
 ├── styles.css           (26 KB - Main styles)

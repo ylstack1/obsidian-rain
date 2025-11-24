@@ -24,14 +24,14 @@ npm run build
 ```
 - Compiles TypeScript
 - Bundles with esbuild
-- Outputs to `dist/` folder
+- Outputs to `build/` folder
 
 ### Step 2: Stage Changes
 ```bash
 git add -A
 ```
 - Stages all modified files
-- Includes dist/, manifest.json, versions.json, etc.
+- Includes build/, manifest.json, versions.json, etc.
 
 ### Step 3: Commit
 ```bash
@@ -87,13 +87,13 @@ When you run `npm run release`, you'll see:
 
 📌 Version: 2.2.0
 🏷️  Tag: v2.2.0
-📂 Build output: dist/
+📂 Build output: build/
 
 📦 Release files:
-  - dist/main.js
-  - dist/manifest.json
-  - dist/styles.css
-  - dist/styles_modern.css
+  - build/main.js
+  - build/manifest.json
+  - build/styles.css
+  - build/styles_modern.css
 
 🔗 GitHub: https://github.com/frostmute/make-it-rain/releases/tag/v2.2.0
 
@@ -138,7 +138,7 @@ git push origin --tags
 3. Select tag: `v2.2.0`
 4. Title: `Release v2.2.0`
 5. Description: Copy from `RELEASE_NOTES_v2.2.0.md`
-6. Upload files from `dist/` folder:
+6. Upload files from `build/` folder:
    - main.js
    - manifest.json
    - styles.css
@@ -222,10 +222,10 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/main.js
-            dist/manifest.json
-            dist/styles.css
-            dist/styles_modern.css
+            build/main.js
+            build/manifest.json
+            build/styles.css
+            build/styles_modern.css
 ```
 
 ## Troubleshooting

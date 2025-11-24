@@ -63,18 +63,29 @@ try {
   console.log('═'.repeat(50));
   console.log(`\n📌 Version: ${version}`);
   console.log(`🏷️  Tag: ${tag}`);
-  console.log(`📂 Build output: dist/`);
-  console.log(`\n📦 Release files:`);
-  console.log(`  - dist/main.js`);
-  console.log(`  - dist/manifest.json`);
-  console.log(`  - dist/styles.css`);
-  console.log(`  - dist/styles_modern.css`);
+  console.log(`📂 Build output: build/`);
+  
+  const releaseFilesPath = path.join(rootDir, 'build', 'release-files.txt');
+  if (fs.existsSync(releaseFilesPath)) {
+    console.log(`\n📦 Release files (manifest):`);
+    console.log(fs.readFileSync(releaseFilesPath, 'utf-8'));
+  } else {
+      console.log(`\n📦 Release files:`);
+      console.log(`  - build/main.js`);
+      console.log(`  - build/manifest.json`);
+      console.log(`  - build/styles.css`);
+      console.log(`  - build/versions.json`);
+      if (fs.existsSync(path.join(rootDir, 'build', 'styles_modern.css'))) {
+        console.log(`  - build/styles_modern.css`);
+      }
+  }
+
   console.log(`\n🔗 GitHub: https://github.com/frostmute/make-it-rain/releases/tag/${tag}`);
   console.log(`\n💡 Next steps:`);
   console.log(`  1. Go to GitHub releases page`);
   console.log(`  2. Edit the ${tag} release`);
   console.log(`  3. Add release notes from RELEASE_NOTES_v${version}.md`);
-  console.log(`  4. Upload dist files as release assets`);
+  console.log(`  4. Upload build files as release assets (see list above)`);
   console.log(`\n✅ Ready for BRAT import!\n`);
 
 } catch (error) {

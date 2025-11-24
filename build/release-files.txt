@@ -1,0 +1,15 @@
+Plugin Release Files
+Version: 2.2.0
+Date: 2025-11-24T18:00:25.495Z
+
+Files:
+- main.js
+- manifest.json
+- styles.css
+- versions.json
+- styles_modern.css
+
+Installation:
+1. Create a folder 'make-it-rain' in your Obsidian vault's .obsidian/plugins/ directory.
+2. Copy all the files listed above into that folder.
+3. Reload Obsidian and enable the plugin.
