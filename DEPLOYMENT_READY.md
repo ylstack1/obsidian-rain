@@ -3,10 +3,10 @@
 ## ✅ Build Status: READY FOR DEPLOYMENT
 
 ### 📁 Files Ready for Release:
-- `dist/main.js` - Plugin code (enhanced)
-- `dist/manifest.json` - Plugin manifest v2.0.0
-- `dist/styles.css` - Original styles
-- `dist/styles_modern.css` - Enhanced modern styles (15KB)
+- `build/main.js` - Plugin code (enhanced)
+- `build/manifest.json` - Plugin manifest v2.0.0
+- `build/styles.css` - Original styles
+- `build/styles_modern.css` - Enhanced modern styles (15KB)
 - `RELEASE_NOTES_v2.0.0.md` - Detailed release notes
 
 ### 🎯 What's Been Enhanced:
@@ -44,7 +44,7 @@
 ```
 
 #### Manual Deployment:
-1. Upload files from `dist/` folder to GitHub release
+1. Upload files from `build/` folder to GitHub release
 2. Tag as v2.0.0
 3. Include `RELEASE_NOTES_v2.0.0.md` in release description
 4. Announce the enhanced version to users
