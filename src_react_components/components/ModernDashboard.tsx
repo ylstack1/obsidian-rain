@@ -1,12 +1,12 @@
 // Modern Dashboard Component
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Grid, List, Settings, Plus, Filter, Download, RefreshCw, LayoutGrid } from 'lucide-react';
+import { Search, Grid, List, Settings, Plus, Filter, Download, RefreshCw, LayoutGrid, Layers } from 'lucide-react';
 import clsx from 'clsx';
 import { CollectionTree } from './CollectionTree';
 import { RaindropItemCard } from './RaindropItemCard';
 import { ItemDetailModal } from './ItemDetailModal';
-import { RaindropItem, RaindropCollection, MakeItRainSettings } from '../types';
+import { RaindropItem, RaindropCollection, MakeItRainSettings } from '../../src/types';
 
 interface ModernDashboardProps {
   collections: RaindropCollection[];
@@ -21,6 +21,7 @@ interface ModernDashboardProps {
 
 type ViewLayout = 'grid' | 'list' | 'card';
 type SortOption = 'created' | 'title' | 'updated';
+type GroupOption = 'none' | 'collection' | 'type' | 'date';
 
 export const ModernDashboard: React.FC<ModernDashboardProps> = ({
   collections,
@@ -38,6 +39,7 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [layout, setLayout] = useState<ViewLayout>('card');
   const [sortBy, setSortBy] = useState<SortOption>('created');
+  const [groupBy, setGroupBy] = useState<GroupOption>('none');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filter and sort items
@@ -54,7 +56,7 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
     }
 
     // Sort items
-    filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'title':
           return a.title.localeCompare(b.title);
@@ -65,9 +67,40 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
           return new Date(b.created).getTime() - new Date(a.created).getTime();
       }
     });
-
-    return filtered;
   }, [items, searchTerm, sortBy]);
+
+  // Group items
+  const groupedItems = useMemo(() => {
+    if (groupBy === 'none') return { 'All Items': filteredAndSortedItems };
+
+    const groups: Record<string, RaindropItem[]> = {};
+    
+    filteredAndSortedItems.forEach(item => {
+      let key = 'Other';
+      if (groupBy === 'collection') {
+        key = item.collection?.title || 'Unsorted';
+      } else if (groupBy === 'type') {
+        key = item.type.charAt(0).toUpperCase() + item.type.slice(1);
+      } else if (groupBy === 'date') {
+        key = new Date(item.created).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      }
+      
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+    
+    return groups;
+  }, [filteredAndSortedItems, groupBy]);
+
+  // Sort group keys
+  const sortedGroupKeys = useMemo(() => {
+      const keys = Object.keys(groupedItems);
+      if (groupBy === 'date') {
+          // Sort by date descending (assuming format "Month Year")
+          return keys.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      }
+      return keys.sort(); // Alphabetical for others
+  }, [groupedItems, groupBy]);
 
   const handleSelectCollection = useCallback(async (collection: RaindropCollection) => {
     setActiveCollection(collection);
@@ -135,58 +168,94 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
         </div>
 
         {/* Search and Controls */}
-        <div className="flex items-center gap-4">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-            <input
-              type="text"
-              placeholder="Search bookmarks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-            />
-          </div>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            {/* Search */}
+            <div className="relative flex-1 w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
+              <input
+                type="text"
+                placeholder="Search bookmarks..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              />
+            </div>
 
-          {/* Layout Controls */}
-          <div className="flex items-center gap-1 border border-border rounded-md p-1">
-            {(['grid', 'card', 'list'] as ViewLayout[]).map((layoutOption) => {
-              const IconComponent = layoutIcons[layoutOption];
-              return (
-                <button
-                  key={layoutOption}
-                  onClick={() => setLayout(layoutOption)}
-                  className={clsx(
-                    'p-1.5 rounded transition-colors',
-                    layout === layoutOption
-                      ? 'bg-accent text-accent-foreground'
-                      : 'hover:bg-accent/50 text-muted-foreground hover:text-foreground'
-                  )}
-                  title={`${layoutOption} view`}
+            <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                {/* Layout Controls */}
+                <div className="flex items-center gap-1 border border-border rounded-md p-1 bg-background">
+                  {(['grid', 'card', 'list'] as ViewLayout[]).map((layoutOption) => {
+                    const IconComponent = layoutIcons[layoutOption];
+                    return (
+                      <button
+                        key={layoutOption}
+                        onClick={() => setLayout(layoutOption)}
+                        className={clsx(
+                          'p-1.5 rounded transition-colors',
+                          layout === layoutOption
+                            ? 'bg-accent text-accent-foreground'
+                            : 'hover:bg-accent/50 text-muted-foreground hover:text-foreground'
+                        )}
+                        title={`${layoutOption} view`}
+                      >
+                        <IconComponent size={16} />
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Group By */}
+                <div className="relative">
+                    <Layers size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <select
+                      value={groupBy}
+                      onChange={(e) => setGroupBy(e.target.value as GroupOption)}
+                      className="pl-9 pr-8 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent appearance-none cursor-pointer min-w-[140px]"
+                    >
+                      <option value="none">No Grouping</option>
+                      <option value="collection">By Collection</option>
+                      <option value="type">By Type</option>
+                      <option value="date">By Date</option>
+                    </select>
+                </div>
+
+                {/* Sort */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent cursor-pointer"
                 >
-                  <IconComponent size={16} />
-                </button>
-              );
-            })}
+                  <option value="created">Newest</option>
+                  <option value="updated">Updated</option>
+                  <option value="title">A-Z</option>
+                </select>
+            </div>
           </div>
 
-          {/* Sort */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="px-3 py-2 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="created">Sort by Created</option>
-            <option value="updated">Sort by Updated</option>
-            <option value="title">Sort by Title</option>
-          </select>
+          {/* Mobile Collection Selector */}
+          <div className="md:hidden w-full">
+             <select 
+                className="w-full p-2 bg-background border border-border rounded-md"
+                value={activeCollection?._id || ''}
+                onChange={(e) => {
+                   const col = collections.find(c => c._id === Number(e.target.value));
+                   if(col) handleSelectCollection(col);
+                }}
+             >
+                <option value="">Select Collection</option>
+                {collections.map(c => (
+                   <option key={c._id} value={c._id}>{c.title}</option>
+                ))}
+             </select>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-80 flex-shrink-0 border-r border-border bg-card/30">
+        <aside className="hidden md:block w-64 lg:w-80 flex-shrink-0 border-r border-border bg-card/30 overflow-y-auto">
           <CollectionTree
             collections={collections}
             activeCollectionId={activeCollection?._id || null}
@@ -207,7 +276,7 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
             </div>
           ) : filteredAndSortedItems.length === 0 ? (
             <div className="h-full flex items-center justify-center">
-              <div className="text-center max-w-md">
+              <div className="text-center max-w-md p-6">
                 <Search className="mx-auto mb-4 text-muted-foreground/50" size={48} />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {searchTerm ? 'No bookmarks found' : 'No bookmarks to display'}
@@ -231,7 +300,7 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
               </div>
             </div>
           ) : (
-            <div className="h-full overflow-y-auto p-6">
+            <div className="h-full overflow-y-auto p-4 md:p-6 scroll-smooth">
               {/* Collection Header */}
               {activeCollection && (
                 <div className="mb-6">
@@ -245,29 +314,47 @@ export const ModernDashboard: React.FC<ModernDashboardProps> = ({
                 </div>
               )}
 
-              {/* Items Grid/List */}
-              <motion.div
-                layout
-                className={clsx(
-                  'gap-4',
-                  layout === 'grid' && 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-                  layout === 'card' && 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-                  layout === 'list' && 'flex flex-col'
-                )}
-              >
-                <AnimatePresence mode="popLayout">
-                  {filteredAndSortedItems.map((item) => (
-                    <RaindropItemCard
-                      key={item._id}
-                      item={item}
-                      layout={layout}
-                      onSelect={handleSelectItem}
-                      onAddToVault={onAddToVault}
-                      enableAnimations={settings.enableAnimations}
-                    />
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+              {/* Items Grid/List Grouped */}
+              <div className="space-y-10 pb-10">
+                {sortedGroupKeys.map((groupTitle) => {
+                    const groupItems = groupedItems[groupTitle];
+                    return (
+                        <div key={groupTitle}>
+                          {groupBy !== 'none' && (
+                            <h3 className="text-lg font-medium text-foreground mb-4 flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2 border-b border-border/50">
+                              {groupTitle}
+                              <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                                {groupItems.length}
+                              </span>
+                            </h3>
+                          )}
+                          
+                          <motion.div
+                            layout
+                            className={clsx(
+                              'gap-4',
+                              layout === 'grid' && 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+                              layout === 'card' && 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+                              layout === 'list' && 'flex flex-col'
+                            )}
+                          >
+                            <AnimatePresence mode="popLayout">
+                              {groupItems.map((item) => (
+                                <RaindropItemCard
+                                  key={item._id}
+                                  item={item}
+                                  layout={layout}
+                                  onSelect={handleSelectItem}
+                                  onAddToVault={onAddToVault}
+                                  enableAnimations={settings.enableAnimations}
+                                />
+                              ))}
+                            </AnimatePresence>
+                          </motion.div>
+                        </div>
+                    );
+                })}
+              </div>
             </div>
           )}
         </main>

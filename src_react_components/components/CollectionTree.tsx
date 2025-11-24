@@ -3,7 +3,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, Folder, FolderOpen, Hash, Search, Filter } from 'lucide-react';
 import clsx from 'clsx';
-import { RaindropCollection } from '../types';
+import { RaindropCollection } from '../../src/types';
 
 interface CollectionTreeProps {
   collections: RaindropCollection[];
